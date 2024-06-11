@@ -3,5 +3,4 @@ node_modules
 
 artifacts-zk
 cache-zk
-artifacts-zk/
-cache-zk/
+deployments-zk

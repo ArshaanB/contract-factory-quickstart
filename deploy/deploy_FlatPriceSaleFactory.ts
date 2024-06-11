@@ -21,17 +21,4 @@ export default async function (hre: HardhatRuntimeEnvironment) {
     `🏭 flatPriceSaleFactory_v_2_1 address: ${flatPriceSaleFactory_v_2_1.target}`
   );
   console.log("✅ Deployment complete!");
-
-  // TRY IF VERIFY FAILS
-  // const artifact = await hre.deployer.loadArtifact(
-  //   "FlatPriceSaleFactory_v_2_1"
-  // );
-  // const res = await hre.run("verify", {
-  //   address: "0xfbf8c0a3535dbbc4db77d2389689a65d0bbe6c3f",
-  //   contract:
-  //     "contracts/sale/v2.1/FlatPriceSaleFactory.sol:FlatPriceSaleFactory_v_2_1",
-  //   constructorArgsParams: ["0xb919e67636704a20dd75fc0217f8d9035196f2b7"],
-  //   bytecode: artifact.bytecode
-  // });
-  // console.log(res);
 }
