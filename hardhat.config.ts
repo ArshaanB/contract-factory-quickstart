@@ -1,6 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 
-import "@matterlabs/hardhat-zksync";
+import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-verify";
+import "@matterlabs/hardhat-zksync-node";
 
 const config: HardhatUserConfig = {
   defaultNetwork: "zkSyncSepoliaTestnet",
@@ -41,7 +44,7 @@ const config: HardhatUserConfig = {
     }
   },
   zksolc: {
-    version: "latest",
+    version: "1.4.1",
     settings: {
       // find all available options in the official documentation
       // https://era.zksync.io/docs/tools/hardhat/hardhat-zksync-solc.html#configuration
