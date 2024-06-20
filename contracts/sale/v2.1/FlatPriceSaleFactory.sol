@@ -31,6 +31,8 @@ contract FlatPriceSaleFactory_v_2_1 {
 		IOracleOrL2OracleWithSequencerCheck[] calldata oracles,
 		uint8[] calldata decimals
 	) external returns (FlatPriceSale_v_2_1 sale) {
+		// cloneDeterministic/create2 alternative
+		// sale = FlatPriceSale_v_2_1(Clones.cloneDeterministic(address(implementation), keccak256(abi.encodePacked(_owner, _baseCurrency, _nativePaymentsEnabled, _nativeTokenPriceOracle, tokens, oracles, decimals))));
 		sale = FlatPriceSale_v_2_1(Clones.clone(address(implementation)));
 
 		emit NewSale(

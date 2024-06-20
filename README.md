@@ -3,5 +3,5 @@
 ```shell
 npm install
 npm run compile
-npx hardhat deploy-zksync --script deploy_FlatPriceSaleFactory.ts
+npx hardhat deploy-zksync --script execute_newSale.ts
 ```
