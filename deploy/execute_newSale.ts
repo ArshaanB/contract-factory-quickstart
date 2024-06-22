@@ -44,7 +44,7 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   };
   const baseCurrency = "USD";
   const nativePaymentsEnabled = true;
-  const nativeTokenPriceOracle = "0x6D41d1dc818112880b40e26BD6FD347E41008eDA";
+  const nativeTokenPriceOracle = "0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF";
   const tokens = [];
   const oracles = [];
   const decimals = [];
