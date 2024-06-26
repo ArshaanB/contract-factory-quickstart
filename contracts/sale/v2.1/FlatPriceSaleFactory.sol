@@ -8,8 +8,8 @@ contract FlatPriceSaleFactory_v_2_1 {
 	address public immutable implementation;
 	string public constant VERSION = "2.0";
 
+	// address indexed implementation,
 	event NewSale(
-		address indexed implementation,
 		FlatPriceSale_v_2_1 indexed clone,
 		Config config,
 		string baseCurrency,
@@ -17,11 +17,13 @@ contract FlatPriceSaleFactory_v_2_1 {
 		bool nativePaymentsEnabled
 	);
 
-	constructor(address _implementation) {
-		implementation = _implementation;
-	}
+	// constructor(address _implementation) {
+	// 	implementation = _implementation;
+	// }
 
 	function newSale(
+        uint256 _feeBips,
+        address payable _feeRecipient,
 		address _owner,
 		Config calldata _config,
 		string calldata _baseCurrency,
@@ -31,12 +33,22 @@ contract FlatPriceSaleFactory_v_2_1 {
 		IOracleOrL2OracleWithSequencerCheck[] calldata oracles,
 		uint8[] calldata decimals
 	) external returns (FlatPriceSale_v_2_1 sale) {
-		// cloneDeterministic/create2 alternative
-		// sale = FlatPriceSale_v_2_1(Clones.cloneDeterministic(address(implementation), keccak256(abi.encodePacked(_owner, _baseCurrency, _nativePaymentsEnabled, _nativeTokenPriceOracle, tokens, oracles, decimals))));
-		sale = FlatPriceSale_v_2_1(Clones.clone(address(implementation)));
+		// sale = FlatPriceSale_v_2_1(Clones.clone(address(implementation)));
+		FlatPriceSale_v_2_1 sale = new FlatPriceSale_v_2_1(
+            _feeBips,
+            _feeRecipient,
+            _owner,
+            _config,
+            _baseCurrency,
+            _nativePaymentsEnabled,
+            _nativeTokenPriceOracle,
+            tokens,
+            oracles,
+            decimals
+        );
 
 		emit NewSale(
-			implementation,
+			// implementation,
 			sale,
 			_config,
 			_baseCurrency,
@@ -44,15 +56,15 @@ contract FlatPriceSaleFactory_v_2_1 {
 			_nativePaymentsEnabled
 		);
 
-		sale.initialize(
-			_owner,
-			_config,
-			_baseCurrency,
-			_nativePaymentsEnabled,
-			_nativeTokenPriceOracle,
-			tokens,
-			oracles,
-			decimals
-		);
+		// sale.initialize(
+		// 	_owner,
+		// 	_config,
+		// 	_baseCurrency,
+		// 	_nativePaymentsEnabled,
+		// 	_nativeTokenPriceOracle,
+		// 	tokens,
+		// 	oracles,
+		// 	decimals
+		// );
 	}
 }

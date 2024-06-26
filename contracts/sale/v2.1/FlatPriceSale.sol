@@ -146,33 +146,45 @@ contract FlatPriceSale_v_2_1 is Sale, PullPaymentUpgradeable {
 	// reasonably random value: xor of merkle root and blockhash for transaction setting merkle root
 	uint160 internal randomValue;
 
-	// All clones will share the information in the implementation constructor
-	constructor(uint256 _feeBips, address payable _feeRecipient) {
-		if (_feeBips > 0) {
-			require(_feeRecipient != address(0), "feeRecipient == 0");
-		}
-		feeRecipient = _feeRecipient;
-		feeBips = _feeBips;
+    // All clones will share the information in the implementation constructor
+    // TODO: validUpdate(_config)
+    constructor(
+        uint256 _feeBips,
+        address payable _feeRecipient,
+        address _owner,
+        Config memory _config,
+        string memory _baseCurrency,
+        bool _nativePaymentsEnabled,
+        IOracleOrL2OracleWithSequencerCheck _nativeTokenPriceOracle,
+        IERC20Upgradeable[] memory tokens,
+        IOracleOrL2OracleWithSequencerCheck[] memory oracles,
+        uint8[] memory decimals
+    ) {
+        if (_feeBips > 0) {
+            require(_feeRecipient != address(0), "feeRecipient == 0");
+        }
+        feeRecipient = _feeRecipient;
+        feeBips = _feeBips;
 
 		emit ImplementationConstructor(feeRecipient, feeBips);
-	}
+// 	}
 
-	/**
-  Replacement for constructor for clones of the implementation contract
-  Important: anyone can call the initialize function!
-  */
-	function initialize(
-		address _owner,
-		Config calldata _config,
-		string calldata _baseCurrency,
-		bool _nativePaymentsEnabled,
-		IOracleOrL2OracleWithSequencerCheck _nativeTokenPriceOracle,
-		IERC20Upgradeable[] calldata tokens,
-		IOracleOrL2OracleWithSequencerCheck[] calldata oracles,
-		uint8[] calldata decimals
-	) public initializer validUpdate(_config) {
-		// initialize the PullPayment escrow contract
-		__PullPayment_init();
+// 	/**
+//   Replacement for constructor for clones of the implementation contract
+//   Important: anyone can call the initialize function!
+//   */
+// 	function initialize(
+// 		address _owner,
+// 		Config calldata _config,
+// 		string calldata _baseCurrency,
+// 		bool _nativePaymentsEnabled,
+// 		IOracleOrL2OracleWithSequencerCheck _nativeTokenPriceOracle,
+// 		IERC20Upgradeable[] calldata tokens,
+// 		IOracleOrL2OracleWithSequencerCheck[] calldata oracles,
+// 		uint8[] calldata decimals
+// 	) public initializer validUpdate(_config) {
+        // initialize the PullPayment escrow contract
+        // __PullPayment_init();
 
 		// validate the new sale
 		require(tokens.length == oracles.length, "token and oracle lengths !=");
@@ -327,10 +339,10 @@ contract FlatPriceSale_v_2_1 is Sale, PullPaymentUpgradeable {
 			uint80 answeredInRound
 		) = oracle.latestRoundData();
 
-		require(_price > 0, "negative price");
-		require(answeredInRound > 0, "answer == 0");
-		require(timeStamp > 0, "round not complete");
-		require(answeredInRound >= roundID, "stale price");
+        require(_price > 0, "negative price");
+        require(answeredInRound > 0, "answer == 0");
+        require(timeStamp > 0, "round not complete");
+        require(answeredInRound >= roundID, "stale price");
 
 		return uint256(_price);
 	}

@@ -25,7 +25,6 @@ abstract contract Sale is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
 	/// @custom:oz-upgrades-unsafe-allow constructor
 	constructor() {
-		_disableInitializers();
 	}
 
 	// is this user permitted to access a sale?

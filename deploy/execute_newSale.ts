@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Provider } from "zksync-ethers";
-
-import * as ContractArtifact from "../artifacts-zk/contracts/sale/v2.1/FlatPriceSaleFactory.sol/FlatPriceSaleFactory_v_2_1.json";
+import { getWallet, verifyContract } from "./utils";
+import { Deployer } from "@matterlabs/hardhat-zksync-deploy";
 
 // load env file
 import dotenv from "dotenv";
@@ -10,25 +10,31 @@ dotenv.config();
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 export default async function (hre: HardhatRuntimeEnvironment) {
-  // original
-  // flatPriceSaleFactory_v_2_1Address: 0xC96D8047B0B812c10e798cB249402a15c5c0753F
-  // cloneDeterministic/create2 alternative
-  // flatPriceSaleFactory_v_2_1Address: 0xb0280B6d67fA691a479f94FC49B97f4020110C08
   const flatPriceSaleFactory_v_2_1Address =
-    "0xC96D8047B0B812c10e798cB249402a15c5c0753F";
+    "0xe21eBDd622388E15707b9B94187cC1B537f954f3";
 
   const provider = new Provider(
     // @ts-ignore
-    hre.userConfig.networks?.zkSyncSepoliaTestnet?.url
+    hre.userConfig.networks?.zkSyncMainnet?.url
   );
   const signer = new ethers.Wallet(PRIVATE_KEY, provider);
-  const contract = new ethers.Contract(
+  const log = (message: string) => {
+    console.log(message);
+  }
+  const wallet = getWallet();
+  const deployer = new Deployer(hre, wallet);
+
+  const contractArtifactName = "FlatPriceSaleFactory_v_2_1";
+  const contractArtifact = await hre.artifacts.readArtifact(contractArtifactName);
+  const flatPriceSaleFactory_v_2_1Contract = new ethers.Contract(
     flatPriceSaleFactory_v_2_1Address,
-    ContractArtifact.abi,
+    contractArtifact.abi,
     signer
   );
 
   // Define example parameters for the `newSale` function
+  const feeBips = 0;
+  const feeRecipient = "0x0000000000000000000000000000000000000000";
   const owner = "0xb4B95fC47Bb797AcC777e5A2AA27c23C294637eE"; // Owner address
   const config = {
     recipient: "0xb4B95fC47Bb797AcC777e5A2AA27c23C294637eE", // Address of the recipient
@@ -44,24 +50,58 @@ export default async function (hre: HardhatRuntimeEnvironment) {
   };
   const baseCurrency = "USD";
   const nativePaymentsEnabled = true;
-  const nativeTokenPriceOracle = "0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF";
+  const nativeTokenPriceOracle = "0x3BB095E86604c230c0eEC4D7362b5df7cB462035";
   const tokens = [];
   const oracles = [];
   const decimals = [];
+  const allParams = [feeBips, feeRecipient, owner, config, baseCurrency, nativePaymentsEnabled, nativeTokenPriceOracle, tokens, oracles, decimals];
 
-  // Call `newSale` function on contract
-  console.log(
-    `The message is ${await contract.newSale(
-      owner,
-      config,
-      baseCurrency,
-      nativePaymentsEnabled,
-      nativeTokenPriceOracle,
-      tokens,
-      oracles,
-      decimals
-    )}`
-  );
+  // Use the factory to create a new Sale
+  let createTx = await flatPriceSaleFactory_v_2_1Contract.newSale(...allParams);
+  let createTxResult = await createTx.wait();
+  let newSaleAddress = createTxResult.contractAddress;
+
+  const contractArtifactSaleName = "FlatPriceSale_v_2_1";
+  const contractArtifactSale = await hre.artifacts.readArtifact(contractArtifactSaleName);
+  const contractSourceSale = `${contractArtifactSale.sourceName}:${contractArtifactSale.contractName}`;
+
+  console.log(`🚀 New FlatPriceSale_v_2_1 deployed at: ${newSaleAddress}`);
+
+  const contractZKArtifactSale = await deployer.loadArtifact(contractArtifactSaleName).catch((error) => {
+    if (error?.message?.includes(`Artifact for contract "${contractArtifactName}" not found.`)) {
+      console.error(error.message);
+      throw `⛔️ Please make sure you have compiled your contracts or specified the correct contract name!`;
+    } else {
+      throw error;
+    }
+  });
+  const contract = await deployer.deploy(contractZKArtifactSale, allParams);
+  let encodedAllParams = contract.interface.encodeDeploy(allParams);
+  log(`Requesting contract verification...`);
+  await verifyContract({
+    address: newSaleAddress,
+    contract: contractSourceSale,
+    constructorArguments: encodedAllParams,
+    bytecode: contractZKArtifactSale.bytecode,
+  });
+
+  console.log('✅ Sale creation and verification complete!');
+
+  // Use the factory to create a new Sale
+  createTx = await flatPriceSaleFactory_v_2_1Contract.newSale(...allParams);
+  createTxResult = await createTx.wait();
+  newSaleAddress = createTxResult.contractAddress;
+
+  log(`Requesting contract verification...`);
+  await verifyContract({
+    address: newSaleAddress,
+    contract: contractSourceSale,
+    constructorArguments: encodedAllParams,
+    bytecode: contractZKArtifactSale.bytecode,
+  });
+
+  console.log(`🚀 New FlatPriceSale_v_2_1 deployed at: ${newSaleAddress}`);
+  console.log('✅ Sale creation and verification complete!');
 
   console.log("✅ Deployment complete!");
 }
